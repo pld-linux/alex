@@ -1,0 +1,707 @@
+--- alex-2.0.orig/alex/doc/alex.sgml
++++ alex-2.0/alex/doc/alex.sgml
+@@ -1330,8 +1330,8 @@
+ 	<term><option>-g</option></term>
+ 	<term><option>--ghc</option></term>
+ 	<listitem>
+-	  <para>Causes Alex to produce a parser which is optimised for
+-	  compiling with GHC.  The parser will be significantly more
++	  <para>Causes Alex to produce a lexer which is optimised for
++	  compiling with GHC.  The lexer will be significantly more
+ 	  efficient, both in terms of the size of the compiled
+ 	  lexer and its runtime.</para>
+ 	</listitem>
+@@ -1368,8 +1368,8 @@
+ 	<term><option>-v</option></term>
+ 	<term><option>--version</option></term>
+ 	<listitem>
+-	  <para>Be more verbose.  This currently doesn't do
+-	  anything, but it might in the future.</para>
++	  <para>Print version information on standard output then exit
++      successfully.</para>
+ 	</listitem>
+       </varlistentry>
+     </variablelist>
+--- alex-2.0.orig/alex/doc/alex.1.in
++++ alex-2.0/alex/doc/alex.1.in
+@@ -0,0 +1,111 @@
++.TH ALEX 1 "2003-09-09" "Glasgow FP Suite" "Alex Lexical Analyser Generator"
++.SH NAME
++alex \- the lexical analyser generator for Haskell
++
++.SH SYNOPSIS
++.B alex
++[\fIOPTION\fR]... \fIfile\fR [\fIOPTION\fR]...
++
++.SH DESCRIPTION
++This manual page documents briefly the
++.BR alex 
++command.
++
++.PP
++This manual page was written for the Debian GNU/Linux distribution
++because the original program does not have a manual page.  Instead, it
++has documentation in various other formats, including DVI, Info and
++HTML; see below.
++
++.PP
++.B Alex
++is a lexical analyser generator system for Haskell. It is similar to the
++tool lex or flex for C/C++.
++
++.PP
++Input files are expected to be of the form
++.I file.x
++and
++.B alex
++will produce output in
++.I file.y
++
++.PP
++Caveat: When using 
++.I hbc 
++(Chalmers Haskell) the command argument structure is slightly
++different.  This is because the hbc run time system takes some flags
++as its own (for setting things like the heap size, etc).  This problem
++can be circumvented by adding a single dash (`-') to your command
++line.  So when using a hbc generated version of Alex, the argument
++structure is:
++
++.B alex \-
++[\fIOPTION\fR]... \fIfile\fR [\fIOPTION\fR]...
++
++.SH OPTIONS
++The programs follow the usual GNU command line syntax, with long
++options starting with two dashes (`--').  A summary of options is
++included below.  For a complete description, see the other
++documentation.
++
++.TP
++.BR \-d ", " \-\-debug
++Instructs Alex to generate a lexer which will output debugging messsages
++as it runs.
++
++.TP
++.BR \-g ", " \-\-ghc
++Instructs Alex to generate a lexer which is optimised for compiling with
++GHC. The lexer will be significantly more efficient, both in terms of
++the size of the compiled lexer and its runtime.
++
++.TP
++\fB\-o\fR \fIFILE\fR, \fB\-\-outfile=\fIFILE
++Specifies the filename in which the output is to be placed. By default,
++this is the name of the input file with the
++.I .x
++suffix replaced by
++.I .hs
++
++.TP
++\fB\-i\fR [\fIFILE\fR], \fB\-\-info\fR[=\fIFILE\fR]
++Produces a human-readable rendition of the state machine (DFA) that
++Alex derives from the lexer, in
++.I FILE
++(default:
++.I file.info
++where the input file is
++.I file.x
++).
++
++The format of the info file is currently a bit basic, and not
++particularly informative.
++
++.TP
++.BR \-v ", " \-\-version
++Print version information on standard output then exit successfully.
++
++.SH FILES
++.I @LIBDIR@
++
++.SH "SEE ALSO"
++.BR @DOCDIR@ ,
++the Alex homepage
++.UR http://haskell.org/alex/
++(http://haskell.org/alex/)
++.UE
++
++.SH COPYRIGHT
++Alex Version @VERSION@ 
++
++Copyright (c) 1995-2003, Chris Dornan and Simon Marlow
++
++.SH AUTHOR
++This manual page was written by Ian Lynagh
++<igloo@debian.org>, based on the happy manpage, for the Debian GNU/Linux
++system (but may be used by others).
++
++.\" Local variables:
++.\" mode: nroff
++.\" End:
+--- alex-2.0.orig/alex/src/Main.hs
++++ alex-2.0/alex/src/Main.hs
+@@ -48,12 +48,11 @@
+ 	putStrLn copyright
+ 	exitWith ExitSuccess
+     (_,_,errors) -> do
+-	prog <- getProgName
+-        die (concat errors ++ usageInfo (usageHeader prog) argInfo)
++        die (concat errors ++ usageInfo usageHeader argInfo)
+ 
+ copyright = "Alex version " ++ version ++ ", (c) 2003 Chris Dornan and Simon Marlow\n"
+ 
+-usageHeader prog = prog ++ " [OPTION...] file"
++usageHeader = "alex [OPTION...] file"
+ 
+ runAlex cli file = do
+   basename <- case (reverse file) of
+--- alex-2.0.orig/alex/src/alex.sh
++++ alex-2.0/alex/src/alex.sh
+@@ -5,6 +5,6 @@
+ #	ALEXBIN
+ 
+ case $* in
+-*--template*) $ALEXBIN $*;;
+-*)            $ALEXBIN --template $ALEXLIB $*;;
++*--template*) $ALEXBIN "$@";;
++*)            $ALEXBIN --template $ALEXLIB ${1+"$@"};;
+ esac
+--- alex-2.0.orig/configure.in
++++ alex-2.0/configure.in
+@@ -195,6 +195,33 @@
+         HostOS_CPP='mingw32'
+ 	exeext='.exe'
+         ;;
++mips-*-linux*)
++        HostPlatform=mips-unknown-linux # hack again
++        TargetPlatform=mips-unknown-linux
++        BuildPlatform=mips-unknown-linux
++        HostPlatform_CPP='mips_unknown_linux'
++        HostArch_CPP='mips'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++hppa*-*-linux*)
++        HostPlatform=hppa-unknown-linux # hack again
++        TargetPlatform=hppa-unknown-linux
++        BuildPlatform=hppa-unknown-linux
++        HostPlatform_CPP='hppa_unknown_linux'
++        HostArch_CPP='hppa'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++arm*-linux*)
++        HostPlatform=arm-unknown-linux # hack again
++        TargetPlatform=arm-unknown-linux
++        BuildPlatform=arm-unknown-linux
++        HostPlatform_CPP='arm_unknown_linux'
++        HostArch_CPP='arm'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ ia64-*-linux*)
+         HostPlatform=ia64-unknown-linux # hack again
+         TargetPlatform=ia64-unknown-linux
+@@ -204,6 +231,15 @@
+         HostVendor_CPP='unknown'
+         HostOS_CPP='linux'
+         ;;
++m68k-*-linux*)
++        HostPlatform=m68k-unknown-linux # hack again
++        TargetPlatform=m68k-unknown-linux
++        BuildPlatform=m68k-unknown-linux
++        HostPlatform_CPP='m68k_unknown_linux'
++        HostArch_CPP='m68k'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ m68k-next-nextstep2)
+         HostPlatform_CPP='m68k_next_nextstep2'
+         HostArch_CPP='m68k'
+@@ -294,6 +330,15 @@
+ 	HostVendor_CPP='apple'
+ 	HostOS_CPP='darwin'
+ 	;;
++powerpc-*-linux*)
++        HostPlatform=powerpc-unknown-linux
++        TargetPlatform=powerpc-unknown-linux
++        BuildPlatform=powerpc-unknown-linux
++        HostPlatform_CPP='powerpc_unknown_linux'
++        HostArch_CPP='powerpc'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ sparc-sun-sunos4*)
+ 	HostPlatform=sparc-sun-sunos4
+ 	TargetPlatform=sparc-sun-sunos4 #hack
+@@ -312,6 +357,24 @@
+         HostVendor_CPP='sun'
+         HostOS_CPP='solaris2'
+         ;;
++sparc*-unknown-linux*)
++   HostPlatform=sparc-unknown-linux
++   TargetPlatform=sparc-unknown-linux
++   BuildPlatform=sparc-unknown-linux
++        HostPlatform_CPP='sparc-unknown-linux'
++        HostArch_CPP='sparc'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++s390-ibm-linux*)
++    HostPlatform=s390-ibm-linux
++    TargetPlatform=s390-ibm-linux #hack
++    BuildPlatform=s390-ibm-linux #hack
++        HostPlatform_CPP='s390_ibm_linux'
++        HostArch_CPP='s390'
++        HostVendor_CPP='ibm'
++        HostOS_CPP='linux'
++        ;;
+ *)
+         echo "Unrecognised platform: $HostPlatform"
+         exit 1
+@@ -646,7 +709,7 @@
+ dnl ** Find lex command (lex or flex) - *doesn't* use autoconf's
+ dnl    AC_PROG_LEX, since it doesn't actually check whether 'lex'
+ dnl    exists if 'flex' doesn't.
+-AC_PROG_LEX_STRICT
++dnl AC_PROG_LEX_STRICT
+ 
+ dnl ** figure out how to do a BSD-ish install
+ AC_PROG_INSTALL
+--- alex-2.0.orig/configure
++++ alex-2.0/configure
+@@ -1598,6 +1598,33 @@
+         HostOS_CPP='mingw32'
+ 	exeext='.exe'
+         ;;
++mips-*-linux*)
++        HostPlatform=mips-unknown-linux # hack again
++        TargetPlatform=mips-unknown-linux
++        BuildPlatform=mips-unknown-linux
++        HostPlatform_CPP='mips_unknown_linux'
++        HostArch_CPP='mips'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++hppa*-*-linux*)
++        HostPlatform=hppa-unknown-linux # hack again
++        TargetPlatform=hppa-unknown-linux
++        BuildPlatform=hppa-unknown-linux
++        HostPlatform_CPP='hppa_unknown_linux'
++        HostArch_CPP='hppa'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++arm*-linux*)
++        HostPlatform=arm-unknown-linux # hack again
++        TargetPlatform=arm-unknown-linux
++        BuildPlatform=arm-unknown-linux
++        HostPlatform_CPP='arm_unknown_linux'
++        HostArch_CPP='arm'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ ia64-*-linux*)
+         HostPlatform=ia64-unknown-linux # hack again
+         TargetPlatform=ia64-unknown-linux
+@@ -1607,6 +1634,15 @@
+         HostVendor_CPP='unknown'
+         HostOS_CPP='linux'
+         ;;
++m68k-*-linux*)
++        HostPlatform=m68k-unknown-linux # hack again
++        TargetPlatform=m68k-unknown-linux
++        BuildPlatform=m68k-unknown-linux
++        HostPlatform_CPP='m68k_unknown_linux'
++        HostArch_CPP='m68k'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ m68k-next-nextstep2)
+         HostPlatform_CPP='m68k_next_nextstep2'
+         HostArch_CPP='m68k'
+@@ -1697,6 +1733,15 @@
+ 	HostVendor_CPP='apple'
+ 	HostOS_CPP='darwin'
+ 	;;
++powerpc-*-linux*)
++        HostPlatform=powerpc-unknown-linux
++        TargetPlatform=powerpc-unknown-linux
++        BuildPlatform=powerpc-unknown-linux
++        HostPlatform_CPP='powerpc_unknown_linux'
++        HostArch_CPP='powerpc'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
+ sparc-sun-sunos4*)
+ 	HostPlatform=sparc-sun-sunos4
+ 	TargetPlatform=sparc-sun-sunos4 #hack
+@@ -1715,6 +1760,24 @@
+         HostVendor_CPP='sun'
+         HostOS_CPP='solaris2'
+         ;;
++sparc*-unknown-linux*)
++   HostPlatform=sparc-unknown-linux
++   TargetPlatform=sparc-unknown-linux
++   BuildPlatform=sparc-unknown-linux
++        HostPlatform_CPP='sparc-unknown-linux'
++        HostArch_CPP='sparc'
++        HostVendor_CPP='unknown'
++        HostOS_CPP='linux'
++        ;;
++s390-ibm-linux*)
++    HostPlatform=s390-ibm-linux
++    TargetPlatform=s390-ibm-linux #hack
++    BuildPlatform=s390-ibm-linux #hack
++        HostPlatform_CPP='s390_ibm_linux'
++        HostArch_CPP='s390'
++        HostVendor_CPP='ibm'
++        HostOS_CPP='linux'
++        ;;
+ *)
+         echo "Unrecognised platform: $HostPlatform"
+         exit 1
+@@ -3769,82 +3832,82 @@
+ 
+ 
+ 
+-# Extract the first word of "flex", so it can be a program name with args.
+-set dummy flex; ac_word=$2
+-echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+-if test "${ac_cv_prog_LEX+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  if test -n "$LEX"; then
+-  ac_cv_prog_LEX="$LEX" # Let the user override the test.
+-else
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH
+-do
+-  IFS=$as_save_IFS
+-  test -z "$as_dir" && as_dir=.
+-  for ac_exec_ext in '' $ac_executable_extensions; do
+-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+-    ac_cv_prog_LEX="flex"
+-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+-    break 2
+-  fi
+-done
+-done
+-
+-fi
+-fi
+-LEX=$ac_cv_prog_LEX
+-if test -n "$LEX"; then
+-  echo "$as_me:$LINENO: result: $LEX" >&5
+-echo "${ECHO_T}$LEX" >&6
+-else
+-  echo "$as_me:$LINENO: result: no" >&5
+-echo "${ECHO_T}no" >&6
+-fi
+-
+-if test -z "$LEX"
+-then
+-  # Extract the first word of "lex", so it can be a program name with args.
+-set dummy lex; ac_word=$2
+-echo "$as_me:$LINENO: checking for $ac_word" >&5
+-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+-if test "${ac_cv_prog_LEX+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  if test -n "$LEX"; then
+-  ac_cv_prog_LEX="$LEX" # Let the user override the test.
+-else
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH
+-do
+-  IFS=$as_save_IFS
+-  test -z "$as_dir" && as_dir=.
+-  for ac_exec_ext in '' $ac_executable_extensions; do
+-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+-    ac_cv_prog_LEX="lex"
+-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+-    break 2
+-  fi
+-done
+-done
+-
+-fi
+-fi
+-LEX=$ac_cv_prog_LEX
+-if test -n "$LEX"; then
+-  echo "$as_me:$LINENO: result: $LEX" >&5
+-echo "${ECHO_T}$LEX" >&6
+-else
+-  echo "$as_me:$LINENO: result: no" >&5
+-echo "${ECHO_T}no" >&6
+-fi
+-
+-  test -z "$LEX" && { { echo "$as_me:$LINENO: error: 'lex' or 'flex' is required to compile GHC." >&5
+-echo "$as_me: error: 'lex' or 'flex' is required to compile GHC." >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
++## Extract the first word of "flex", so it can be a program name with args.
++#set dummy flex; ac_word=$2
++#echo "$as_me:$LINENO: checking for $ac_word" >&5
++#echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
++#if test "${ac_cv_prog_LEX+set}" = set; then
++#  echo $ECHO_N "(cached) $ECHO_C" >&6
++#else
++#  if test -n "$LEX"; then
++#  ac_cv_prog_LEX="$LEX" # Let the user override the test.
++#else
++#as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++#for as_dir in $PATH
++#do
++#  IFS=$as_save_IFS
++#  test -z "$as_dir" && as_dir=.
++#  for ac_exec_ext in '' $ac_executable_extensions; do
++#  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
++#    ac_cv_prog_LEX="flex"
++#    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
++#    break 2
++#  fi
++#done
++#done
++#
++#fi
++#fi
++#LEX=$ac_cv_prog_LEX
++#if test -n "$LEX"; then
++#  echo "$as_me:$LINENO: result: $LEX" >&5
++#echo "${ECHO_T}$LEX" >&6
++#else
++#  echo "$as_me:$LINENO: result: no" >&5
++#echo "${ECHO_T}no" >&6
++#fi
++#
++#if test -z "$LEX"
++#then
++#  # Extract the first word of "lex", so it can be a program name with args.
++#set dummy lex; ac_word=$2
++#echo "$as_me:$LINENO: checking for $ac_word" >&5
++#echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
++#if test "${ac_cv_prog_LEX+set}" = set; then
++#  echo $ECHO_N "(cached) $ECHO_C" >&6
++#else
++#  if test -n "$LEX"; then
++#  ac_cv_prog_LEX="$LEX" # Let the user override the test.
++#else
++#as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++#for as_dir in $PATH
++#do
++#  IFS=$as_save_IFS
++#  test -z "$as_dir" && as_dir=.
++#  for ac_exec_ext in '' $ac_executable_extensions; do
++#  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
++#    ac_cv_prog_LEX="lex"
++#    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
++#    break 2
++#  fi
++#done
++#done
++#
++#fi
++#fi
++#LEX=$ac_cv_prog_LEX
++#if test -n "$LEX"; then
++#  echo "$as_me:$LINENO: result: $LEX" >&5
++#echo "${ECHO_T}$LEX" >&6
++#else
++#  echo "$as_me:$LINENO: result: no" >&5
++#echo "${ECHO_T}no" >&6
++#fi
++#
++#  test -z "$LEX" && { { echo "$as_me:$LINENO: error: 'lex' or 'flex' is required to compile GHC." >&5
++#echo "$as_me: error: 'lex' or 'flex' is required to compile GHC." >&2;}
++#   { (exit 1); exit 1; }; }
++#fi
+ 
+ 
+ # Find a good install program.  We prefer a C program (faster),
+--- alex-2.0.orig/debian/rules
++++ alex-2.0/debian/rules
+@@ -0,0 +1,96 @@
++#!/usr/bin/make -f
++# debian/rules for alex
++# This file is public domain software, originally written by Joey Hess. 
++# Adapted for alex by Ian Lynagh.
++
++# Uncomment this to turn on verbose mode.
++#export DH_VERBOSE=1
++
++version      := $(shell dpkg-parsechangelog | sed -ne 's/^Version: \([^-]*\)-.*/\1/p')
++docdir       := `pwd`/debian/`dh_listpackages`/usr/share/doc/alex
++sgmldocindex := alex.html
++
++build: build-stamp
++build-stamp:
++	dh_testdir
++
++	touch configure
++	./configure --prefix=/usr
++	$(MAKE)
++	$(MAKE) -C alex/doc ps html
++	sed -e "s#@LIBDIR@#/usr/lib/alex-$(version)#g" \
++	    -e "s#@DOCDIR@#/usr/share/doc/alex#g" \
++		-e "s#@VERSION@#$(version)#g" \
++	  alex/doc/alex.1.in > alex/doc/alex.1
++	echo ".so man1/alex.1" > debian/alex-$(version).1
++
++	touch build-stamp
++
++clean:
++	dh_testdir
++	dh_testroot
++	rm -f build-stamp
++
++	touch configure
++	-$(MAKE) distclean
++	rm -f alex/doc/alex.1 debian/alex-$(version).1
++	rm -f mk/config.mk mk/config.h mk/stamp-h
++
++	dh_clean
++
++install: build
++	dh_testdir
++	dh_testroot
++	dh_clean -k
++	dh_installdirs
++
++	$(MAKE) prefix=`pwd`/debian/`dh_listpackages`/usr install
++
++	mkdir -p $(docdir)/{sgml,dvi,ps,html}
++	cp    alex/doc/*.sgml $(docdir)/sgml/
++	cp    alex/doc/*.dvi  $(docdir)/dvi/
++	cp    alex/doc/*.ps   $(docdir)/ps/
++	cp -a alex/doc/alex/* $(docdir)/html/
++	ln -s $(sgmldocindex) $(docdir)/html/index.html
++	cp -a alex/examples   $(docdir)
++
++# Build architecture-independent files here.
++binary-indep: build install
++	@:
++
++# Build architecture-dependent files here.
++binary-arch: build install
++	dh_testdir
++	dh_testroot
++	dh_installchangelogs
++	dh_installdocs
++	dh_installexamples
++#	dh_install
++#	dh_installmenu
++#	dh_installdebconf	
++#	dh_installlogrotate
++#	dh_installemacsen
++#	dh_installcatalogs
++#	dh_installpam
++#	dh_installmime
++#	dh_installinit
++#	dh_installcron
++#	dh_installinfo
++#	dh_undocumented
++	dh_installman debian/alex-$(version).1 alex/doc/alex.1
++	dh_link
++	dh_strip
++	dh_compress
++	dh_fixperms
++#	dh_perl
++#	dh_python
++#	dh_makeshlibs
++	dh_installdeb
++	dh_shlibdeps
++	dh_gencontrol
++	dh_md5sums
++	dh_builddeb
++
++binary: binary-indep binary-arch
++.PHONY: build clean binary-indep binary-arch binary install
++
+--- alex-2.0.orig/debian/changelog
++++ alex-2.0/debian/changelog
+@@ -0,0 +1,19 @@
++alex (2.0-2) unstable; urgency=low
++
++  * Added s390, m68k, mips, hppa, arm and powerpc Linux to configure{,.in}
++
++ -- Ian Lynagh (wibble) <igloo@debian.org>  Wed, 01 Oct 2003 12:31:01 +0000
++
++alex (2.0-1) unstable; urgency=low
++
++  * Initial release. Closes: #151044.
++  * Changed configure{,.in} to not require flex.
++  * Wrote manpage for alex(1).
++  * Fix references to happy/parsers and version/verbose confusion in the docs.
++  * Changed wrapper to use $@ and ${1+"$@"} rather than $*
++  * When giving usage info, always use the name "alex" (otherwise
++    alex.bin is given).
++  * Add sparc case to configure{,.in}.
++
++ -- Ian Lynagh (wibble) <igloo@debian.org>  Tue, 09 Sep 2003 15:14:27 +0000
++
+--- alex-2.0.orig/debian/control
++++ alex-2.0/debian/control
+@@ -0,0 +1,15 @@
++Source: alex
++Section: devel
++Priority: optional
++Maintainer: Ian Lynagh (wibble) <igloo@debian.org>
++Standards-Version: 3.5.6.0
++Build-Depends: debhelper (>= 4), ghc6 | ghc5 (>= 5.04), jade, docbook-utils
++
++Package: alex
++Architecture: any
++Depends: ${shlibs:Depends}
++Description: lexical analyser generator for Haskell
++ Alex is a tool for generating lexical analysers in Haskell, given a
++ description of the tokens to be recognised in the form of regular
++ expressions. It is similar to the tool lex or flex for C/C++.
++
+--- alex-2.0.orig/debian/compat
++++ alex-2.0/debian/compat
+@@ -0,0 +1 @@
++4
+--- alex-2.0.orig/debian/copyright
++++ alex-2.0/debian/copyright
+@@ -0,0 +1,41 @@
++This package was originally debianized by Ian Lynagh <igloo@debian.org>
++on 2003-09-08.
++
++It was downloaded from
++http://www.haskell.org/alex/dist/alex-2.0-src.tar.bz2
++
++Upstream Author: Simon Marlow (simonmar@microsoft.com)
++		
++Copyright:
++
++The Glasgow Haskell Compiler License
++
++Copyright 1999, The University Court of the University of Glasgow.
++All rights reserved.
++
++Redistribution and use in source and binary forms, with or without
++modification, are permitted provided that the following conditions are met:
++
++· Redistributions of source code must retain the above copyright notice,
++  this list of conditions and the following disclaimer.
++
++· Redistributions in binary form must reproduce the above copyright notice,
++  this list of conditions and the following disclaimer in the documentation
++  and/or other materials provided with the distribution.
++
++· Neither name of the University nor the names of its contributors may be
++  used to endorse or promote products derived from this software without
++  specific prior written permission.
++
++THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY COURT OF THE UNIVERSITY OF
++GLASGOW AND THE CONTRIBUTORS ÄS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
++INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
++FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
++UNIVERSITY COURT OF THE UNIVERSITY OF GLASGOW OR THE CONTRIBUTORS BE LIABLE
++FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
++DAMAGE.
