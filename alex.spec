@@ -34,6 +34,7 @@ chmod u+w configure*
 %{__aclocal}
 %{__autoconf}
 %configure
+%{__make} depend
 %{__make}
 %{__make} ps -C alex/doc
 
