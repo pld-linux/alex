@@ -20,6 +20,7 @@ BuildRequires:	ghc >= 5.04
 BuildRequires:	gmp-devel
 BuildRequires:	jadetex
 BuildRequires:	openjade
+BuildRequires:	tetex-dvips
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
