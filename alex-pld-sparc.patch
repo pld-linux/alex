@@ -1,0 +1,11 @@
+--- configure.in~	2004-11-23 02:53:25.000000000 +0100
++++ configure.in	2004-11-23 03:01:17.000000000 +0100
+@@ -366,7 +366,7 @@
+         HostVendor_CPP='sun'
+         HostOS_CPP='solaris2'
+         ;;
+-sparc*-unknown-linux*)
++sparc*-linux*)
+    HostPlatform=sparc-unknown-linux
+    TargetPlatform=sparc-unknown-linux
+    BuildPlatform=sparc-unknown-linux
