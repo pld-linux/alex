@@ -9,9 +9,15 @@ Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.bz2
 # Source0-md5:	14ff6abf21d81763b15afe151add9091
 Patch0:		%{name}-DESTDIR.patch
 Patch1:		%{name}-debian.patch
+Patch2:		%{name}-amd64.patch
 URL:		http://www.haskell.org/alex/
-BuildRequires:	ghc >= 5.04
+BuildRequires:	autoconf
 BuildRequires:	automake
+BuildRequires:	docbook-dtd31-sgml
+BuildRequires:	docbook-style-dsssl
+BuildRequires:	ghc >= 5.04
+BuildRequires:	jadetex
+BuildRequires:	openjade
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -28,11 +34,13 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2
 
 %build
 chmod u+w configure*
 %{__aclocal}
 %{__autoconf}
+cp -f /usr/share/automake/config.sub .
 %configure
 %{__make} depend
 %{__make}
