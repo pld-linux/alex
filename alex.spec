@@ -11,6 +11,7 @@ Patch0:		%{name}-DESTDIR.patch
 Patch1:		%{name}-debian.patch
 URL:		http://www.haskell.org/alex/
 BuildRequires:	ghc >= 5.04
+BuildRequires:	automake
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -29,6 +30,9 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %patch1 -p1
 
 %build
+chmod u+w configure*
+%{__aclocal}
+%{__autoconf}
 %configure
 %{__make}
 %{__make} ps -C alex/doc
