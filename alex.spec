@@ -1,4 +1,5 @@
 Summary:	A lexical analyser generator for Haskell
+Summary(pl):	Generator analizatorów sk³adniowych dla Haskella
 Name:		alex
 Version:	2.0
 Release:	1
@@ -12,10 +13,14 @@ BuildRequires:	ghc >= 5.04
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-Alex is a tool for generating lexical analysers in Haskell,
-given a description of the tokens to be recognised in the form
-of regular expressions.
-It is similar to the tool lex or flex for C/C++.
+Alex is a tool for generating lexical analysers in Haskell, given a
+description of the tokens to be recognised in the form of regular
+expressions. It is similar to the tool lex or flex for C/C++.
+
+%description -l pl
+Alex to narzêdzie do generowania analizatorów sk³adniowych w Haskellu
+na podstawie opisu tokenów do rozpoznawania w postaci wyra¿eñ
+regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 
 %prep
 %setup -q
@@ -42,6 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc alex/{ANNOUNCE,LICENSE,README} alex/doc/alex.{ps,dvi}
 %attr(755,root,root) %{_bindir}/*
+%dir %{_libdir}/%{name}-%{version}
 %{_libdir}/%{name}-%{version}/A*
 %attr(755,root,root) %{_libdir}/%{name}-%{version}/alex.bin
 %{_examplesdir}/%{name}-%{version}
