@@ -8,6 +8,7 @@ Group:		Development/Tools
 Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.bz2
 # Source0-md5:	14ff6abf21d81763b15afe151add9091
 Patch0:		%{name}-DESTDIR.patch
+Patch1:		%{name}-debian.patch
 URL:		http://www.haskell.org/alex/
 BuildRequires:	ghc >= 5.04
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -25,6 +26,7 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 %configure
