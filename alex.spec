@@ -16,8 +16,7 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	docbook-dtd31-sgml
 BuildRequires:	docbook-style-dsssl
-BuildRequires:	ghc >= 6.2.2
-# BuildRequires:	ghc >= 5.04
+BuildRequires:	ghc >= 5.04
 BuildRequires:	gmp-devel
 BuildRequires:	jadetex
 BuildRequires:	openjade
