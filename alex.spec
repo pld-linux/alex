@@ -10,6 +10,7 @@ Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.bz2
 Patch0:		%{name}-DESTDIR.patch
 Patch1:		%{name}-debian.patch
 Patch2:		%{name}-amd64.patch
+Patch3:		%{name}-pld-sparc.patch
 URL:		http://www.haskell.org/alex/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -36,6 +37,7 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %patch0 -p1
 %patch1 -p1
 %patch2
+%patch3
 
 %build
 chmod u+w configure*
