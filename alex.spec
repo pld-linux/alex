@@ -58,7 +58,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc alex/{ANNOUNCE,LICENSE,README} alex/doc/alex docs/building/building docs/docbook-cheat-sheet/docbook-cheat-sheet
+%doc alex/{ANNOUNCE,LICENSE,README} alex/doc/alex
 %attr(755,root,root) %{_bindir}/*
 %dir %{_libdir}/%{name}-%{version}
 %{_libdir}/%{name}-%{version}/A*
