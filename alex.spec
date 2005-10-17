@@ -17,6 +17,7 @@ BuildRequires:	ghc >= 5.04
 BuildRequires:	gmp-devel
 BuildRequires:	jadetex
 BuildRequires:	openjade
+BuildRequires:	sed >= 4.0
 BuildRequires:	tetex-dvips
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -33,8 +34,9 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %prep
 %setup -q
 
+sed -i -e 's/alpha\*-unknown-linux/alpha*-*-linux/' configure.ac
+
 %build
-chmod u+w configure*
 %{__aclocal}
 %{__autoconf}
 cp -f /usr/share/automake/config.sub .
