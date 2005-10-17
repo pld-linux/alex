@@ -6,7 +6,7 @@ Summary:	A lexical analyser generator for Haskell
 Summary(pl):	Generator analizatorów sk³adniowych dla Haskella
 Name:		alex
 Version:	2.0.1
-Release:	2
+Release:	3
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
 Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.gz
@@ -38,7 +38,7 @@ regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
 %prep
 %setup -q
 
-sed -i -e 's/alpha\*-unknown-linux/alpha*-*-linux/' configure.ac
+sed -i -e 's/\(alpha\*\|powerpc\|powerpc64\)-unknown-linux\*)/\1-*-linux*)/' configure.ac
 
 %build
 %{__aclocal}
