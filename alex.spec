@@ -1,8 +1,12 @@
+#
+# Conditional build:
+%bcond_with	bootstrap	# use foreign (non-rpm) ghc
+#
 Summary:	A lexical analyser generator for Haskell
 Summary(pl):	Generator analizatorów sk³adniowych dla Haskella
 Name:		alex
 Version:	2.0.1
-Release:	1
+Release:	2
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
 Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.gz
@@ -13,7 +17,7 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	docbook-dtd31-sgml
 BuildRequires:	docbook-style-dsssl
-BuildRequires:	ghc >= 5.04
+%{!?with_bootstrap:BuildRequires:	ghc >= 5.04}
 BuildRequires:	gmp-devel
 BuildRequires:	jadetex
 BuildRequires:	openjade
