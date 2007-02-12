@@ -3,7 +3,7 @@
 %bcond_with	bootstrap	# use foreign (non-rpm) ghc
 #
 Summary:	A lexical analyser generator for Haskell
-Summary(pl):	Generator analizatorów sk³adniowych dla Haskella
+Summary(pl.UTF-8):   Generator analizatorÃ³w skÅ‚adniowych dla Haskella
 Name:		alex
 Version:	2.0.1
 Release:	3
@@ -30,10 +30,10 @@ Alex is a tool for generating lexical analysers in Haskell, given a
 description of the tokens to be recognised in the form of regular
 expressions. It is similar to the tool lex or flex for C/C++.
 
-%description -l pl
-Alex to narzêdzie do generowania analizatorów sk³adniowych w Haskellu
-na podstawie opisu tokenów do rozpoznawania w postaci wyra¿eñ
-regularnych. Jest podobne do narzêdzi lex lub flex dla C/C++.
+%description -l pl.UTF-8
+Alex to narzÄ™dzie do generowania analizatorÃ³w skÅ‚adniowych w Haskellu
+na podstawie opisu tokenÃ³w do rozpoznawania w postaci wyraÅ¼eÅ„
+regularnych. Jest podobne do narzÄ™dzi lex lub flex dla C/C++.
 
 %prep
 %setup -q
