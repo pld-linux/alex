@@ -3,7 +3,7 @@
 %bcond_with	bootstrap	# use foreign (non-rpm) ghc
 #
 Summary:	A lexical analyser generator for Haskell
-Summary(pl.UTF-8):   Generator analizatorów składniowych dla Haskella
+Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
 Version:	2.0.1
 Release:	3
