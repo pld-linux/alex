@@ -5,24 +5,21 @@
 Summary:	A lexical analyser generator for Haskell
 Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
-Version:	2.0.1
-Release:	3
+Version:	2.1.0
+Release:	1
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
-Source0:	http://www.haskell.org/alex/dist/%{name}-%{version}-src.tar.gz
-# Source0-md5:	edb62560e29c8de23913c65c52adbf19
-Patch0:		%{name}-DESTDIR.patch
-URL:		http://www.haskell.org/alex/
+Source0:	http://haskell.org/alex/dist/%{version}/%{name}-%{version}.tar.gz
+# Source0-md5:	17e80d39cc3f1aba28dcea0e358c81e9
+URL:		http://haskell.org/alex/
 BuildRequires:	autoconf
-BuildRequires:	automake
-BuildRequires:	docbook-dtd31-sgml
-BuildRequires:	docbook-style-dsssl
-%{!?with_bootstrap:BuildRequires:	ghc >= 5.04}
+BuildRequires:	docbook-dtd42-xml
+BuildRequires:	docbook-style-xsl
+%{!?with_bootstrap:BuildRequires:	ghc >= 6.6}
 BuildRequires:	gmp-devel
-BuildRequires:	jadetex
-BuildRequires:	openjade
-BuildRequires:	sed >= 4.0
-BuildRequires:	tetex-dvips
+%{!?with_bootstrap:BuildRequires:	happy}
+BuildRequires:	libxslt-progs
+#For generating documentation in PDF: fop or xmltex
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -38,35 +35,31 @@ regularnych. Jest podobne do narzędzi lex lub flex dla C/C++.
 %prep
 %setup -q
 
-sed -i -e 's/\(alpha\*\|powerpc\|powerpc64\)-unknown-linux\*)/\1-*-linux*)/' configure.ac
-
 %build
-%{__aclocal}
+%{?with_bootstrap:PATH=$PATH:/usr/local/bin}
+runhaskell Setup.lhs configure --prefix=%{_prefix}
+runhaskell Setup.lhs build
+
+cd doc
 %{__autoconf}
-cp -f /usr/share/automake/config.sub .
 %configure
-%{__make} depend
-%{__make}
-%{__make} html -C alex/doc
+%{__make} html
+cd ..
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_examplesdir}/%{name}-%{version}}
+%{?with_bootstrap:PATH=$PATH:/usr/local/bin}
+runhaskell Setup.lhs copy --destdir=$RPM_BUILD_ROOT
 
-%{__make} install \
-	bindir=$RPM_BUILD_ROOT%{_bindir} \
-	libdir=$RPM_BUILD_ROOT%{_libdir}/%{name}-%{version}
-
-cp -a alex/examples/* $RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}/
+install -d $RPM_BUILD_ROOT%{_examplesdir}
+cp -a examples $RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc alex/{ANNOUNCE,LICENSE,README} alex/doc/alex
-%attr(755,root,root) %{_bindir}/*
-%dir %{_libdir}/%{name}-%{version}
-%{_libdir}/%{name}-%{version}/A*
-%attr(755,root,root) %{_libdir}/%{name}-%{version}/alex.bin
+%doc ANNOUNCE README TODO doc/alex
+%attr(755,root,root) %{_bindir}/alex
+%{_datadir}/%{name}-%{version}
 %{_examplesdir}/%{name}-%{version}
