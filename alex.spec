@@ -6,7 +6,7 @@ Summary:	A lexical analyser generator for Haskell
 Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
 Version:	2.1.0
-Release:	1
+Release:	2
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
 Source0:	http://haskell.org/alex/dist/%{version}/%{name}-%{version}.tar.gz
