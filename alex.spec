@@ -5,17 +5,18 @@
 Summary:	A lexical analyser generator for Haskell
 Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
-Version:	3.0.1
+Version:	3.0.5
 Release:	1
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
 Source0:	http://hackage.haskell.org/packages/archive/alex/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	5dec239c89165d159faa2154bc0724cd
+# Source0-md5:	018f9817cd3c094294c8ab83e530c1c8
 URL:		http://haskell.org/alex/
 BuildRequires:	autoconf
 BuildRequires:	docbook-dtd42-xml
 BuildRequires:	docbook-style-xsl
 %{!?with_bootstrap:BuildRequires:	ghc >= 6.6}
+BuildRequires:	ghc-QuickCheck >= 2
 BuildRequires:	gmp-devel
 %{!?with_bootstrap:BuildRequires:	happy}
 BuildRequires:	libxslt-progs
@@ -35,7 +36,14 @@ regularnych. Jest podobne do narzędzi lex lub flex dla C/C++.
 %prep
 %setup -q
 
+# ghc relies on ld.bfd specific options
+mkdir -p ld-dir
+if [ -x /usr/bin/ld.bfd ]; then
+	ln -sf /usr/bin/ld.bfd ld-dir/ld
+fi
+
 %build
+PATH=$(pwd)/ld-dir:$PATH
 %{?with_bootstrap:PATH=$PATH:/usr/local/bin}
 runhaskell Setup.lhs configure --prefix=%{_prefix}
 runhaskell Setup.lhs build
