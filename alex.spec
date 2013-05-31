@@ -36,14 +36,7 @@ regularnych. Jest podobne do narzędzi lex lub flex dla C/C++.
 %prep
 %setup -q
 
-# ghc relies on ld.bfd specific options
-mkdir -p ld-dir
-if [ -x /usr/bin/ld.bfd ]; then
-	ln -sf /usr/bin/ld.bfd ld-dir/ld
-fi
-
 %build
-PATH=$(pwd)/ld-dir:$PATH
 %{?with_bootstrap:PATH=$PATH:/usr/local/bin}
 runhaskell Setup.lhs configure --prefix=%{_prefix}
 runhaskell Setup.lhs build
@@ -61,6 +54,11 @@ runhaskell Setup.lhs copy --destdir=$RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT%{_examplesdir}
 cp -a examples $RPM_BUILD_ROOT%{_examplesdir}/%{name}-%{version}
+
+# work around automatic haddock docs installation
+%{__rm} -rf %{name}-%{version}-doc
+cp -a $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version} %{name}-%{version}-doc
+%{__rm} -r $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
