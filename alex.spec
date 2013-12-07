@@ -5,14 +5,15 @@
 Summary:	A lexical analyser generator for Haskell
 Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
-Version:	3.0.5
+Version:	3.1.3
 Release:	1
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
-Source0:	http://hackage.haskell.org/packages/archive/alex/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	018f9817cd3c094294c8ab83e530c1c8
-URL:		http://haskell.org/alex/
-BuildRequires:	autoconf
+#Source0Download: http://hackage.haskell.org/package/alex
+Source0:	http://hackage.haskell.org/package/alex-%{version}/%{name}-%{version}.tar.gz
+# Source0-md5:	525e570cb0e84fd856f9c53605ec9e98
+URL:		http://www.haskell.org/alex/
+BuildRequires:	autoconf >= 2.50
 BuildRequires:	docbook-dtd42-xml
 BuildRequires:	docbook-style-xsl
 %{!?with_bootstrap:BuildRequires:	ghc >= 6.6}
