@@ -6,7 +6,7 @@ Summary:	A lexical analyser generator for Haskell
 Summary(pl.UTF-8):	Generator analizatorów składniowych dla Haskella
 Name:		alex
 Version:	3.2.5
-Release:	1
+Release:	2
 License:	BSD-like w/o adv. clause
 Group:		Development/Tools
 #Source0Download: http://hackage.haskell.org/package/alex
@@ -22,6 +22,9 @@ BuildRequires:	gmp-devel
 BuildRequires:	libxslt-progs
 #For generating documentation in PDF: fop or xmltex
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+# debuginfo is not useful for ghc
+%define		_enable_debug_packages	0
 
 %description
 Alex is a tool for generating lexical analysers in Haskell, given a
